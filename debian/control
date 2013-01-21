@@ -1,0 +1,9 @@
+Package: hsn2-os
+Version: {VER}
+Section: unknown
+Priority: optional
+Architecture: all
+Depends: mongodb-server
+Maintainer: Paweł Borkowski (pawel.borkowski@nask.pl)
+Description: HSN2 Object Store Component.
+Distribution: {DEBIAN_DIST}
