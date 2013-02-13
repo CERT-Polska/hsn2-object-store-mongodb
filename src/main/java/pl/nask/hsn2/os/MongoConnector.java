@@ -91,7 +91,12 @@ public class MongoConnector {
 	public MongoEntity getObjById(Long objId) {
 		MongoEntity me = new MongoEntity();
 		me.put("_id", objId);
-		return MongoEntity.fromDBObject(this.collection.findOne(me));
+		DBObject objFound = this.collection.findOne(me);
+		if (objFound == null) {
+			return null;
+		} else {
+			return MongoEntity.fromDBObject(objFound);
+		}
 	}
 
 	public void putList(ArrayList<DBObject> list) {
