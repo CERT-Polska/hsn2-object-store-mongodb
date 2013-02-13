@@ -20,6 +20,7 @@
 package pl.nask.hsn2.os;
 
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -32,10 +33,14 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.daemon.Daemon;
+import org.apache.commons.daemon.DaemonContext;
+import org.apache.commons.daemon.DaemonController;
+import org.apache.commons.daemon.DaemonInitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Main {
+public class Main implements Daemon {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	private static String connectorAddress = "127.0.0.1";
     private static String mongoAddress = "127.0.0.1";
@@ -46,22 +51,13 @@ public class Main {
     private static ExecutorService executor;
 	private static String jobFinishedIgnore = "none";
 
-    public static void main(String[] args) throws BusException, InterruptedException {
-        CommandLine cmd = parseArguments(args);
-        applyArguments(cmd);
-        ConnectorImpl.initConnection(connectorAddress);
-        try {
-        	MongoConnector.initConnection(mongoAddress, 27017);
-		} catch (IOException e) {
-			LOGGER.error("Problem with MongoDB!",e);
-			System.exit(1);
-		}
-        
-        executor = Executors.newFixedThreadPool(maxListenerLpThreads + maxListenerHpThreads);
-        List<Callable<Object>> connectors = new ArrayList<>();
-        createConnectors(connectors, maxListenerLpThreads, objectStoreQueueNameLow);
-        createConnectors(connectors, maxListenerHpThreads, objectStoreQueueNameHigh);
-        executor.invokeAll(connectors);
+    public static void main(String[] args) throws DaemonInitException, Exception {
+    	Main os = new Main();
+    	os.init(new JsvcArgWrapper(args));
+    	os.start();
+    	Thread.currentThread().join();
+    	os.stop();
+    	os.destroy();
     }
 
     private static void createConnectors(List<Callable<Object>> connectors, int count, String queueName){
@@ -110,4 +106,71 @@ public class Main {
         if (cmd.hasOption("jobFinishedIgnore"))
         	jobFinishedIgnore = cmd.getOptionValue("jobFinishedIgnore");
     }
+
+	@Override
+	public void init(DaemonContext context) throws DaemonInitException,	Exception {
+		CommandLine cmd = parseArguments(context.getArguments());
+		applyArguments(cmd);
+
+	}
+
+	@Override
+	public void start() throws Exception {
+		ConnectorImpl.initConnection(connectorAddress);
+		try {
+			MongoConnector.initConnection(mongoAddress, 27017);
+		} catch (IOException e) {
+			LOGGER.error("Problem with MongoDB!",e);
+			System.exit(1);
+		}
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {		
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				System.exit(1);		
+			}
+		});
+		
+		executor = Executors.newFixedThreadPool(maxListenerLpThreads + maxListenerHpThreads);
+		List<Callable<Object>> connectors = new ArrayList<>();
+		createConnectors(connectors, maxListenerLpThreads, objectStoreQueueNameLow);
+		createConnectors(connectors, maxListenerHpThreads, objectStoreQueueNameHigh);
+		//        executor.invokeAll(connectors);
+		for (Callable<Object> t:connectors) {
+			executor.submit(t);
+		}
+
+	}
+
+	@Override
+	public void stop() throws Exception {
+		executor.shutdownNow();
+		
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+	
+	
+	private static class JsvcArgWrapper implements DaemonContext {
+
+		private final String[] args;
+		public JsvcArgWrapper(String [] p) {
+			this.args = p;
+		}
+		@Override
+		public DaemonController getController() {
+			return null;
+		}
+
+		@Override
+		public String[] getArguments() {
+			return this.args;
+		}
+		
+	}
 }

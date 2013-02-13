@@ -6,7 +6,7 @@
 #   DEBIAN_DIST=(experimental|2.X)
 
 DEBIAN_DIST=experimental
-HSN2_COMPONENT=os
+HSN2_COMPONENT=object-store-mongodb
 
 all:	hsn2-object-store-mongodb
 
