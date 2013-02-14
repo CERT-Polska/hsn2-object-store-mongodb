@@ -66,7 +66,7 @@ public class ObjectStore {
 			response.addId(newObject.getLong("_id"));
 		}
 
-		mongoConnector.putList(list);
+		mongoConnector.putList(jobId, list);
 		LOGGER.debug("Objects passed.{}",response.getIds().toString());
 		LOGGER.debug("Count: {}, Addition time: {}", response.getIds().size(), System.currentTimeMillis() - startTime);
 		return response;
@@ -76,7 +76,7 @@ public class ObjectStore {
 		long objId = mongoConnector.getNextObjId();
 		MongoEntity newObject = prepareObject(jobId, objId, objectData);
 		newObject.addCreationTime();
-		newObject.addInitialAttributes();
+		newObject.addInitialAttributes(jobId);
 		return newObject;
 	}
 	
@@ -92,7 +92,7 @@ public class ObjectStore {
 			list.add(entity);
 			response.addId(objId);
 		}
-		mongoConnector.putList(list);
+		mongoConnector.putList(jobId, list);
 		return response;
 	}
 
@@ -108,7 +108,6 @@ public class ObjectStore {
 	}
 
 	public ObjectStoreResponse updateObject(ObjectRequest objectRequest) {
-
 		try {			
 			ObjectStoreResponse response = new ObjectStoreResponse(ResponseType.SUCCESS_UPDATE);
 			List<ObjectData> dataList = objectRequest.getDataList();
@@ -149,7 +148,7 @@ public class ObjectStore {
 							tmp.put(attr.getName(), eattr.getValue());
 						}
 					}
-					mongoConnector.saveObject(tmp);
+					mongoConnector.saveObject(objectRequest.getJob(), tmp);
 				}
 			}
 
@@ -228,7 +227,7 @@ public class ObjectStore {
 
 		ObjectStoreQuery objectStoreQuery = new ObjectStoreQuery(objectRequest.getQueryList());
 		BasicDBObject queryObject = objectStoreQuery.filter(objectRequest);
-		Set<Long> ids = mongoConnector.executeQuery(queryObject);
+		Set<Long> ids = mongoConnector.executeQuery(objectRequest.getJob(), queryObject);
 
 		ObjectStoreResponse objectStoreResponse = new ObjectStoreResponse(ResponseType.SUCCESS_QUERY);
 		objectStoreResponse.addAllIds(ids);
