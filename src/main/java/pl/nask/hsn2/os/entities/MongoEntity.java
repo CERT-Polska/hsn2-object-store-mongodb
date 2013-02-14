@@ -27,14 +27,6 @@ import pl.nask.hsn2.os.MongoConnector;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-/**
- *
- * (C) Copyright 2011 NASK
- * Software Research & Development Department
- *
- *
- *
- */
 public class MongoEntity extends BasicDBObject implements DBObject {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(MongoEntity.class);
@@ -46,10 +38,10 @@ public class MongoEntity extends BasicDBObject implements DBObject {
 		this.mc = MongoConnector.getInstance();
 	}
 
-	public void addInitialAttributes() {
+	public void addInitialAttributes(long jobId) {
 		if (this.containsField("parent")) {
 			Long parentId = Long.parseLong(this.get("parent").toString());
-			MongoEntity parentObj = this.mc.getObjById(parentId);
+			MongoEntity parentObj = this.mc.getObjById(jobId, parentId);
 	
 			if (parentObj != null) {
 				this.put("top_ancestor", parentObj.get("top_ancestor"));
