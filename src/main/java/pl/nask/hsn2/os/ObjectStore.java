@@ -184,6 +184,9 @@ public class ObjectStore {
 		else if (value instanceof Boolean) {
 			builder.setType(Type.BOOL).setDataBool(objectFound.getBoolean(key));
 		}
+		else if (value == null) {
+			builder.setType(Type.EMPTY);
+		}
 		else {
 			builder.setType(Type.STRING).setDataString(objectFound.getString(key));
 		}
