@@ -110,11 +110,11 @@ public class ConnectorImpl implements Connector {
 		if(!contextType.equals(DEFAULT_CONTENT_TYPE)){
 			throw new IllegalArgumentException("Unknow context: " + contextType);
 		}
-		LOGGER.debug("receives: {}", delivery.toString());
 
 		serviceReplyQueueName = delivery.getProperties().getReplyTo();
 		corrId = delivery.getProperties().getCorrelationId();
 		msgType = delivery.getProperties().getType();
+		LOGGER.debug("receives: {}, corrId: {}", msgType, corrId);
 		return delivery.getBody();
 	}
 
