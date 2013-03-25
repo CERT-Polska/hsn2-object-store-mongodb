@@ -110,11 +110,11 @@ public class ConnectorImpl implements Connector {
 		if(!contextType.equals(DEFAULT_CONTENT_TYPE)){
 			throw new IllegalArgumentException("Unknow context: " + contextType);
 		}
-		LOGGER.debug("receives: {}", delivery.toString());
 
 		serviceReplyQueueName = delivery.getProperties().getReplyTo();
 		corrId = delivery.getProperties().getCorrelationId();
 		msgType = delivery.getProperties().getType();
+		LOGGER.info("Receives message. type: {}, corrID: {}", msgType, corrId);
 		return delivery.getBody();
 	}
 
@@ -141,6 +141,7 @@ public class ConnectorImpl implements Connector {
 				.build();
 		try {
 			channel.basicPublish("", serviceReplyQueueName , properties, objectResponse.toByteArray());
+			LOGGER.info("Reply was sent to {}. corrID: {}", serviceReplyQueueName, corrId);
 		} catch (IOException e) {
 			throw new BusException("Can't send message.", e);
 		}
