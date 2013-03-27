@@ -109,7 +109,6 @@ public class MongoConnector {
 		ArrayList<BasicDBObject> result = new ArrayList<BasicDBObject>();
 
 		query.put("_id", new BasicDBObject("$in", objIds));
-		query.put("job_id", jobId);
 		DBCursor cur = this.getCollectionForJob(jobId).find(query);
 		while (cur.hasNext()) {
 			result.add((BasicDBObject)cur.next());

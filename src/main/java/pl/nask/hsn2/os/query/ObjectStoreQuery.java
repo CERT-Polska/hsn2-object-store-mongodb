@@ -47,8 +47,6 @@ public class ObjectStoreQuery {
 	}
 
 	public BasicDBObject filter(ObjectRequest request) {
-		ArrayList<BasicDBObject> condList = new ArrayList<BasicDBObject>();
-		condList.add(new BasicDBObject("job_id", request.getJob()));
 		BasicDBObject result = new BasicDBObject();
 		doFiltrate(result);
 		return result;
