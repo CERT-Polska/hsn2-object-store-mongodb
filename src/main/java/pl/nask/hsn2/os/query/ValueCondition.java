@@ -36,10 +36,25 @@ public class ValueCondition implements Condition {
 	@Override
 	public void updateQuery(BasicDBObject condList) {
 		if (negate){
-			condList.append(attribute.getName(), new BasicDBObject("$ne", attribute.getDataString()));
+			condList.append(attribute.getName(), new BasicDBObject("$ne", getAttrValue()));
 		}
 		else {
-			condList.append(attribute.getName(), attribute.getDataString());
+			condList.append(attribute.getName(), getAttrValue());
 		}
 	}
+	
+	private Object getAttrValue() {
+        switch (attribute.getType()) {
+        case BOOL: return attribute.getDataBool();
+        case BYTES: return attribute.getDataBytes();
+        case FLOAT: return attribute.getDataFloat();
+        case INT: return attribute.getDataInt();
+        case OBJECT: return attribute.getDataObject();
+        case STRING: return attribute.getDataString();
+        case TIME: return attribute.getDataTime();
+        case EMPTY: 
+        default:
+            return null;
+        }
+    }
 }
