@@ -19,15 +19,8 @@
 
 package pl.nask.hsn2.os.commands;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pl.nask.hsn2.protobuff.Jobs.JobFinished;
-
 abstract class InternalCommand extends AbstractCommand {
-	private final static Logger LOGGER = LoggerFactory.getLogger(InternalCommand.class);
-
 	public void processCommand() {
-			
+			// Nothing.
 	}
 }
