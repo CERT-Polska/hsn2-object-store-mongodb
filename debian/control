@@ -1,9 +1,11 @@
-Package: hsn2-object-store-mongodb
-Version: {VER}
+Source: hsn2-object-store-mongodb
 Section: unknown
 Priority: optional
+Maintainer: CERT Polska <info@cert.pl>
+Build-Depends: debhelper (>= 8.0.0), maven
+Standards-Version: 3.9.3
+
+Package: hsn2-object-store-mongodb
 Architecture: all
-Depends: mongodb-server
-Maintainer: Paweł Borkowski (pawel.borkowski@nask.pl)
+Depends: ${misc:Depends}, mongodb-server
 Description: HSN2 Object Store Component (MongoDB).
-Distribution: {DEBIAN_DIST}
