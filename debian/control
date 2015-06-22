@@ -7,5 +7,5 @@ Standards-Version: 3.9.3
 
 Package: hsn2-object-store-mongodb
 Architecture: all
-Depends: ${misc:Depends}, mongodb-server
+Depends: ${misc:Depends}, mongodb-server, java-wrappers, openjdk-7-jre, jsvc
 Description: HSN2 Object Store Component (MongoDB).
