@@ -1,9 +1,10 @@
-HSN2 Object-Store (hsn2-object-store)
+HSN2 Object-Store MongoDB (hsn2-object-store-mongodb)
 
 
 HSN2 Object Store is a central repository for all objects present in the system.
 It supports inserting new objects, getting and updating data of existing objects, 
-performing queries on all objects that belong to a given job.
+performing queries on all objects that belong to a given job. The current
+implementation uses MongoDB as it's backend database.
 
 
 
