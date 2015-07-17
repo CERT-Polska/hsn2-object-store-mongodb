@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+db_input high hsn2-object-store-mongodb/job-finished-ignore || true
+db_go

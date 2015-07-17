@@ -1,0 +1,6 @@
+Template: hsn2-object-store-mongodb/job-finished-ignore
+Type: select
+Choices: all, fail, none
+Default: fail
+Description: Job finished ignore
+ Part of HSN2 Capture HPC service configuration.

@@ -1,1 +1,2 @@
 build/object-store-mongodb /opt/hsn2/
+object-store-mongodb.conf /etc/hsn2/
