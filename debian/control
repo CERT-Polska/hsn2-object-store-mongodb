@@ -7,7 +7,7 @@ Standards-Version: 3.9.3
 
 Package: hsn2-object-store-mongodb
 Architecture: all
-Depends: ${misc:Depends}, mongodb-server, java-wrappers, openjdk-7-jre, jsvc
+Depends: ${misc:Depends}, mongodb-server, java-wrappers, openjdk-7-jre, jsvc, hsn2-commons-debian
 Homepage: http://www.honeyspider.net
 Description: HSN2 Object Store Component (MongoDB).
  HSN2 Object Store is a central repository for all objects present in the system.
