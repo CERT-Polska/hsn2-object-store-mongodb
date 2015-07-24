@@ -20,7 +20,6 @@
 package pl.nask.hsn2.os;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -137,11 +136,11 @@ public class ObjectStore {
 					response.addMissing(obj.getId());
 				}
 				else{
-					Set<Long> conflicts = new LinkedHashSet<Long>();
+					boolean conflict = false;
 					for (Attribute attr : obj.getAttrsList()) {
 						EntityAttribute eattr = EntityAttribute.instanceFor(attr);
 						if (tmp.containsField(attr.getName())) {
-							conflicts.add(Long.parseLong(tmp.getString("_id")));
+							conflict = true;
 							if (overwrite) {
 								tmp.put(attr.getName(), eattr.getValue());
 							}
@@ -150,8 +149,8 @@ public class ObjectStore {
 							tmp.put(attr.getName(), eattr.getValue());
 						}
 					}
-					for(Long id : conflicts) {
-						response.addConflict(id);
+					if (conflict){
+						response.addConflict(Long.parseLong(tmp.getString("_id")));
 					}
 					mongoConnector.saveObject(objectRequest.getJob(), tmp);
 				}
