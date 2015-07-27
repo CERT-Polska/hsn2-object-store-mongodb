@@ -15,7 +15,7 @@ HSN2_COMPONENT="object-store-mongodb"
 MAINCLASS="pl.nask.hsn2.os.Main"
 CONFFILE=/etc/hsn2/object-store-mongodb.conf
 
-HSN2_JMX_PORT=1107
+#HSN2_JMX_PORT=1107
 HSN2_JVM_PARAMS_MEMORY="-Xmx270m -Xms270m -XX:SurvivorRatio=2 -Xmn140m"
 
 . /lib/hsn2/init-functions-java
