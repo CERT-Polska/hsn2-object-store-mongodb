@@ -20,9 +20,11 @@
 package pl.nask.hsn2.os;
 
 public class BusException extends Exception {
+
 	private static final long serialVersionUID = -7291478709425232934L;
 
 	public BusException() {
+		super();
 	}
 
 	public BusException(String message) {
@@ -34,6 +36,7 @@ public class BusException extends Exception {
 	}
 
 	public BusException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }
