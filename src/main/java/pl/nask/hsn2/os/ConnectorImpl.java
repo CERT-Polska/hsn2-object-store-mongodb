@@ -79,7 +79,7 @@ public class ConnectorImpl implements Connector {
 			channel = connection.createChannel();
 			channel.basicQos(1);
 		} catch (IOException e) {
-			throw new BusException("Can't create connection.", e);
+			throw new BusException("Can't create channel.", e);
 	    }
 	}
 
@@ -104,7 +104,7 @@ public class ConnectorImpl implements Connector {
 		} catch (ShutdownSignalException e) {
 			throw new BusException("Broker has been closed.", e);
 		} catch (InterruptedException e) {
-			throw new BusException("Can't receive message.", e);
+			throw new BusException("Connection to broker interuppted.", e);
 		}
 		String contextType = delivery.getProperties().getContentType();
 		if(!contextType.equals(DEFAULT_CONTENT_TYPE)){
