@@ -136,10 +136,11 @@ public class ObjectStore {
 					response.addMissing(obj.getId());
 				}
 				else{
+					boolean conflict = false;
 					for (Attribute attr : obj.getAttrsList()) {
 						EntityAttribute eattr = EntityAttribute.instanceFor(attr);
 						if (tmp.containsField(attr.getName())) {
-							response.addConflict(Long.parseLong(tmp.getString("_id")));
+							conflict = true;
 							if (overwrite) {
 								tmp.put(attr.getName(), eattr.getValue());
 							}
@@ -147,6 +148,9 @@ public class ObjectStore {
 						else {
 							tmp.put(attr.getName(), eattr.getValue());
 						}
+					}
+					if (conflict){
+						response.addConflict(Long.parseLong(tmp.getString("_id")));
 					}
 					mongoConnector.saveObject(objectRequest.getJob(), tmp);
 				}
