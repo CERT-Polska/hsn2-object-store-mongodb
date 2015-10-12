@@ -31,8 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.RuntimeErrorException;
 
-import junit.framework.Assert;
-
+import org.testng.Assert;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;

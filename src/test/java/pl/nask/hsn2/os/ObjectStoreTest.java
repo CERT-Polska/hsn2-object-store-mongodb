@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 
-import junit.framework.Assert;
 import mockit.NonStrictExpectations;
 
+import org.testng.Assert;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
