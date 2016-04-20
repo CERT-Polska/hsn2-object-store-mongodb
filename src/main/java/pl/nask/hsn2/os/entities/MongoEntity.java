@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,20 +29,20 @@ import com.mongodb.DBObject;
 
 public class MongoEntity extends BasicDBObject implements DBObject {
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(MongoEntity.class);
-	
+	private static final Logger LOGGER = LoggerFactory.getLogger(MongoEntity.class);
+
 	private static final long serialVersionUID = 5504028319157480190L;
 	private MongoConnector mc;
 
 	public MongoEntity() {
-		this.mc = MongoConnector.getInstance();
+		mc = MongoConnector.getInstance();
 	}
 
-	public void addInitialAttributes(long jobId) {
+	public final void addInitialAttributes(long jobId) {
 		if (this.containsField("parent")) {
 			Long parentId = Long.parseLong(this.get("parent").toString());
-			MongoEntity parentObj = this.mc.getObjById(jobId, parentId);
-	
+			MongoEntity parentObj = mc.getObjById(jobId, parentId);
+
 			if (parentObj != null) {
 				this.put("top_ancestor", parentObj.get("top_ancestor"));
 				this.put("depth", Long.parseLong(parentObj.get("depth").toString()) + 1);
@@ -57,7 +57,7 @@ public class MongoEntity extends BasicDBObject implements DBObject {
 		}
 	}
 
-	public void addCreationTime() {
+	public final void addCreationTime() {
 		if (!this.containsField("creation_time"))
 			this.put("creation_time", System.currentTimeMillis());
 	}

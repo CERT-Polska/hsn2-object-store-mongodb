@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -48,6 +48,7 @@ public class Main implements Daemon {
 	private static LoggerManager loggerManager = LoggerForLog4j.getInstance();
 	private static String connectorAddress = "127.0.0.1";
 	private static String mongoAddress = "127.0.0.1";
+	private static int mongoPort = 27017;
 	private static String objectStoreQueueNameLow = "os:l";
 	private static String objectStoreQueueNameHigh = "os:h";
 	private static int maxListenerLpThreads = 5;
@@ -55,7 +56,7 @@ public class Main implements Daemon {
 	private static ExecutorService executor;
 	private static String jobFinishedIgnore = "none";
 
-	public static void main(String[] args) throws DaemonInitException, Exception {
+	public static void main(String[] args) throws DaemonInitException, BusException, InterruptedException {
 		Main os = new Main();
 		os.init(new JsvcArgWrapper(args));
 		os.start();
@@ -115,16 +116,16 @@ public class Main implements Daemon {
 	}
 
 	@Override
-	public void init(DaemonContext context) throws DaemonInitException, Exception {
+	public final void init(DaemonContext context) throws DaemonInitException {
 		CommandLine cmd = parseArguments(context.getArguments());
 		applyArguments(cmd);
 	}
 
 	@Override
-	public void start() throws Exception {
+	public final void start() throws BusException {
 		ConnectorImpl.initConnection(connectorAddress);
 		try {
-			MongoConnector.initConnection(mongoAddress, 27017);
+			MongoConnector.initConnection(mongoAddress, mongoPort);
 		} catch (IOException e) {
 			LOGGER.error("Problem with MongoDB!", e);
 			System.exit(1);
@@ -148,7 +149,7 @@ public class Main implements Daemon {
 	}
 
 	@Override
-	public void stop() throws Exception {
+	public final void stop() {
 		executor.shutdownNow();
 
 	}
@@ -163,7 +164,7 @@ public class Main implements Daemon {
 		private final String[] args;
 
 		public JsvcArgWrapper(String[] p) {
-			this.args = p;
+			args = p.clone();
 		}
 
 		@Override
@@ -173,7 +174,7 @@ public class Main implements Daemon {
 
 		@Override
 		public String[] getArguments() {
-			return this.args;
+			return args;
 		}
 
 	}

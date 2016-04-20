@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -43,31 +43,31 @@ public class ObjectStoreResponse {
 		ids.addAll(dataIds);
 	}
 
-	public void addId(Long id){
+	public final void addId(Long id){
 		ids.add(id);
 	}
 
-	public ResponseType getType() {
+	public final ResponseType getType() {
 		return type;
 	}
 
-	public void setType(ResponseType type) {
+	public final void setType(ResponseType type) {
 		this.type = type;
 	}
 
-	public void addMissing(Long id) {
+	public final void addMissing(Long id) {
 		missing.add(id);
 	}
 
-	public void addData(ObjectData objectData) {
+	public final void addData(ObjectData objectData) {
 		data.add(objectData);
 	}
 
-	public void addConflict(Long id) {
-		this.conflicts.add(id);
+	public final void addConflict(Long id) {
+		conflicts.add(id);
 	}
 
-	public ObjectResponse toObjectResponse() {
+	public final ObjectResponse toObjectResponse() {
 		Builder builder = ObjectResponse.newBuilder().setType(type);
 		switch (type) {
 			case PARTIAL_GET:
@@ -92,11 +92,11 @@ public class ObjectStoreResponse {
 		return builder.build();
 	}
 
-	public Collection<Long> getIds() {
+	public final Collection<Long> getIds() {
 		return ids;
 	}
 
-	public void addAllIds(Collection<? extends Long> ids){
+	public final void addAllIds(Collection<? extends Long> ids){
 		this.ids.addAll(ids);
 	}
 }

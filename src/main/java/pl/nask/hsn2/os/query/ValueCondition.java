@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +34,7 @@ public class ValueCondition implements Condition {
 	}
 
 	@Override
-	public void updateQuery(BasicDBObject condList) {
+	public final void updateQuery(BasicDBObject condList) {
 		if (negate){
 			condList.append(attribute.getName(), new BasicDBObject("$ne", getAttrValue()));
 		}
@@ -42,7 +42,7 @@ public class ValueCondition implements Condition {
 			condList.append(attribute.getName(), getAttrValue());
 		}
 	}
-	
+
 	private Object getAttrValue() {
         switch (attribute.getType()) {
         case BOOL: return attribute.getDataBool();
@@ -52,7 +52,7 @@ public class ValueCondition implements Condition {
         case OBJECT: return attribute.getDataObject();
         case STRING: return attribute.getDataString();
         case TIME: return attribute.getDataTime();
-        case EMPTY: 
+        case EMPTY:
         default:
             return null;
         }

@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,17 +43,17 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 
-public class MongoConnector {
+public final class MongoConnector {
 	private DB db;
 
 	private final BasicDBObject counterQuery = new BasicDBObject("_id", "objId");
 	private final BasicDBObject counterUpdate = new BasicDBObject("$inc", new BasicDBObject("counter", 1));
 	private static volatile MongoConnector instance;
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(ObjectStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStore.class);
 
-	private final static WriteConcern writeConcern = WriteConcern.SAFE;
-	
+	private static final WriteConcern WRITE_CONCERN = WriteConcern.SAFE;
+
 	private Map<Long, DBCollection> collections = Collections.synchronizedMap(new HashMap<Long, DBCollection>());
 
 	private MongoConnector(String host, int port) throws IOException {
@@ -100,11 +101,11 @@ public class MongoConnector {
 		}
 	}
 
-	public void putList(long jobId, ArrayList<DBObject> list) {
-		this.getCollectionForJob(jobId).insert(list, writeConcern);
+	public void putList(long jobId, List<DBObject> list) {
+		this.getCollectionForJob(jobId).insert(list, WRITE_CONCERN);
 	}
 
-	public ArrayList<BasicDBObject> getObjById(long jobId, Iterable<Long> objIds) {
+	public List<BasicDBObject> getObjById(long jobId, Iterable<Long> objIds) {
 		BasicDBObject query = new BasicDBObject();
 		ArrayList<BasicDBObject> result = new ArrayList<BasicDBObject>();
 
@@ -117,7 +118,7 @@ public class MongoConnector {
 	}
 
 	public void saveObject(long jobId, BasicDBObject object) {
-		this.getCollectionForJob(jobId).save(object, writeConcern);
+		this.getCollectionForJob(jobId).save(object, WRITE_CONCERN);
 	}
 
 	public long getNextObjId() {
@@ -129,8 +130,9 @@ public class MongoConnector {
 	public Set<Long> executeQuery(long jobId, BasicDBObject query) {
 		DBCursor cur = this.getCollectionForJob(jobId).find(query);
 		Set<Long> result = new HashSet<Long>();
-		while (cur.hasNext())
+		while (cur.hasNext()) {
 			result.add(Long.parseLong(cur.next().get("_id").toString()));
+		}
 		return result;
 	}
 
@@ -144,7 +146,7 @@ public class MongoConnector {
 
 	/**
 	 * Get MongoDB collection for current job. Create new if absent.
-	 * 
+	 *
 	 * @param jobId
 	 *            Job ID.
 	 * @return Collection for current job.

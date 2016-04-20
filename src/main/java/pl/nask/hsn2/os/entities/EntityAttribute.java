@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -61,19 +61,19 @@ public abstract class EntityAttribute<T> {
         this.name = name;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
     public abstract T getValue();
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
         T value = getValue();
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + (value == null ? 0 : value.hashCode());
         return result;
     }
 
@@ -88,7 +88,7 @@ public abstract class EntityAttribute<T> {
     protected abstract Type getType();
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)

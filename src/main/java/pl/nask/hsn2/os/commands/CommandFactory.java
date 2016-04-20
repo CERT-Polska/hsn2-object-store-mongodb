@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -56,7 +56,7 @@ public class CommandFactory {
 		}
 	}
 
-	public Command commandFor(byte[] msg, String msgType) throws UnsupportedOperationException, InvalidProtocolBufferException {
+	public final Command commandFor(byte[] msg, String msgType) throws InvalidProtocolBufferException {
 		switch(msgType){
 			case "ObjectRequest":
 				ObjectRequest objectRequest = ObjectRequest.parseFrom(msg);

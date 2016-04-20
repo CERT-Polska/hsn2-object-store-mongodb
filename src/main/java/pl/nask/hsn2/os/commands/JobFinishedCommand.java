@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,14 +29,14 @@ public class JobFinishedCommand extends AbstractCommand {
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobFinishedCommand.class);
 	private final JobFinished request;
 	private final String jobFinishedIgnore;
-	
+
 	public JobFinishedCommand(JobFinished request, String jobFinishedIgnore){
 		this.request = request;
 		this.jobFinishedIgnore = jobFinishedIgnore;
 	}
-	
+
 	@Override
-	public void processCommand() {
+	public final void processCommand() {
 		switch (jobFinishedIgnore) {
 			case "all":
 				LOGGER.info("JobFinished (status: {}) was ignored.", request.getStatus());
@@ -53,6 +53,6 @@ public class JobFinishedCommand extends AbstractCommand {
 				LOGGER.info("Unknown jobFinishedIgnore attribute: {}. JobFinished processed.", jobFinishedIgnore);
 				ObjectStore.getInstance().removeJobData(request.getJob());
 		}
-		
+
 	}
 }

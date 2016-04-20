@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -46,6 +46,8 @@ public class ConnectorImpl implements Connector {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorImpl.class);
 	private static volatile Connection connection = null;
 
+	private static final int CLOSE_TIMEOUT = 100;
+
 	private Channel channel = null;
 	private QueueingConsumer servicesConsumer = null;
 	private String corrId = null;
@@ -65,7 +67,7 @@ public class ConnectorImpl implements Connector {
 	        throw new IllegalStateException("Connection already initialized");
 	    }
 	}
-	
+
 	public ConnectorImpl() throws BusException {
 	    if (connection == null) {
 	        throw new IllegalStateException("Connection not initialized");
@@ -86,7 +88,7 @@ public class ConnectorImpl implements Connector {
 	public static void close() {
 		try {
 		    if (connection != null){
-		        connection.close(100);
+		        connection.close(CLOSE_TIMEOUT);
 		    }
 		} catch (IOException e) {
 			LOGGER.error("Can not close connection!", e);
@@ -97,7 +99,7 @@ public class ConnectorImpl implements Connector {
      * @see pl.nask.hsn2.objectStore.Connector#serviceReceive()
      */
 	@Override
-    public byte[] serviceReceive() throws BusException {
+    public final byte[] serviceReceive() throws BusException {
 		QueueingConsumer.Delivery delivery;
 		try {
 			delivery = servicesConsumer.nextDelivery();
@@ -118,7 +120,7 @@ public class ConnectorImpl implements Connector {
 		return delivery.getBody();
 	}
 
-	public void createServicesConsumer(String queueName) throws BusException{
+	public final void createServicesConsumer(String queueName) throws BusException{
 		servicesConsumer = new QueueingConsumer(channel);
 		LOGGER.debug("Service queue: {}", queueName);
 		try {
@@ -133,7 +135,7 @@ public class ConnectorImpl implements Connector {
      * @see pl.nask.hsn2.objectStore.Connector#sendReply(pl.nask.hsn2.protobuff.ObjectStore.ObjectResponse)
      */
 	@Override
-    public void sendReply(ObjectResponse objectResponse) throws BusException {
+    public final void sendReply(ObjectResponse objectResponse) throws BusException {
 		BasicProperties properties = new BasicProperties.Builder()
 				.contentType(DEFAULT_CONTENT_TYPE)
 				.type("ObjectResponse")
@@ -152,7 +154,7 @@ public class ConnectorImpl implements Connector {
      * @see pl.nask.hsn2.objectStore.Connector#sendError(java.lang.String)
      */
 	@Override
-    public void sendError(String msg) {
+    public final void sendError(String msg) {
 		ObjectResponse objectResponse = ObjectResponse.newBuilder()
 	        .setError(msg)
 	        .setType(ResponseType.FAILURE)
@@ -168,11 +170,11 @@ public class ConnectorImpl implements Connector {
      * @see pl.nask.hsn2.objectStore.Connector#isConnected()
      */
 	@Override
-    public boolean isConnected(){
+    public final boolean isConnected(){
 		return servicesConsumer != null && channel.isOpen();
 	}
 
-	public String getMsgType() {
+	public final String getMsgType() {
 		return msgType;
 	}
 }
