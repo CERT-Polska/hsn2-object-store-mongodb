@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+. /lib/hsn2/conf-functions
+
+if [ "$1" = "configure" ]; then
+	setConfigValueFromDb JOB_FINISHED_IGNORE hsn2-object-store-mongodb/job-finished-ignore /etc/hsn2/object-store-mongodb.conf
+	db_stop
+fi
+
+#DEBHELPER#

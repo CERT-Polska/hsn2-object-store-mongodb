@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
- * This file is part of HoneySpider Network 2.0.
- * 
+ *
+ * This file is part of HoneySpider Network 2.1.
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -46,16 +46,15 @@ public class ObjectStoreQuery {
 		}
 	}
 
-	public BasicDBObject filter(ObjectRequest request) {
-		ArrayList<BasicDBObject> condList = new ArrayList<BasicDBObject>();
-		condList.add(new BasicDBObject("job_id", request.getJob()));
+	public final BasicDBObject filter(ObjectRequest request) {
 		BasicDBObject result = new BasicDBObject();
 		doFiltrate(result);
 		return result;
 	}
 
 	private void doFiltrate(BasicDBObject ob){
-		for (Condition condition : conditions)
+		for (Condition condition : conditions) {
 			condition.updateQuery(ob);
+		}
 	}
 }

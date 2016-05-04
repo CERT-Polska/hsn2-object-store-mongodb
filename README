@@ -1,14 +1,15 @@
-HSN2 Object-Store (hsn2-object-store)
+HSN2 Object-Store MongoDB (hsn2-object-store-mongodb)
 
 
 HSN2 Object Store is a central repository for all objects present in the system.
 It supports inserting new objects, getting and updating data of existing objects, 
-performing queries on all objects that belong to a given job.
+performing queries on all objects that belong to a given job. The current
+implementation uses MongoDB as it's backend database.
 
 
 
 
-This repository is a part of bigger project: Honeyspider Network 2.0.
+This repository is a part of bigger project: Honeyspider Network 2.1.
 Project bundle is located at: https://github.com/CERT-Polska/hsn2-bundle.
 More information is available on the project's website:
 http://www.honeyspider.net

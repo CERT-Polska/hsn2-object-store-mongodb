@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
- * This file is part of HoneySpider Network 2.0.
- * 
+ *
+ * This file is part of HoneySpider Network 2.1.
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,12 +39,12 @@ public class ObjectStoreConnector implements Runnable {
 			connector = new ConnectorImpl();
 			connector.createServicesConsumer(objectStoreQueueName);
 		} catch (BusException e) {
-			throw new RuntimeException("Can not establish connection!",e);
+			throw new IllegalStateException("Can not establish connection!",e);
 		}
 		commandFactory = new CommandFactory(connector, jobFinishedIgnore);
 	}
-	
-	public void run() {
+
+	public final void run() {
 		if (connector == null || !connector.isConnected()) {
 			throw new IllegalStateException("Connections aren't established");
 		}

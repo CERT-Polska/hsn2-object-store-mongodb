@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
- * This file is part of HoneySpider Network 2.0.
- * 
+ *
+ * This file is part of HoneySpider Network 2.1.
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,7 +22,11 @@ package pl.nask.hsn2.os;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -38,19 +42,19 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
 
-public class MongoConnector {
-	private DBCollection collection;
+public final class MongoConnector {
 	private DB db;
 
 	private final BasicDBObject counterQuery = new BasicDBObject("_id", "objId");
 	private final BasicDBObject counterUpdate = new BasicDBObject("$inc", new BasicDBObject("counter", 1));
 	private static volatile MongoConnector instance;
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(ObjectStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStore.class);
 
-	private final static WriteConcern writeConcern = WriteConcern.SAFE;
+	private static final WriteConcern WRITE_CONCERN = WriteConcern.SAFE;
+
+	private Map<Long, DBCollection> collections = Collections.synchronizedMap(new HashMap<Long, DBCollection>());
 
 	private MongoConnector(String host, int port) throws IOException {
 		Mongo mongo = null;
@@ -58,8 +62,6 @@ public class MongoConnector {
 			mongo = new Mongo(host, port);
 			mongo.dropDatabase("object-store");
 			db = mongo.getDB("object-store");
-			collection = db.createCollection("allJobsInOne", null);
-			collection.ensureIndex(new BasicDBObject("parent", 1));	
 		} catch (UnknownHostException e) {
 			LOGGER.error("MongoDB host is unreachable: {}", e.getMessage());
 			throw new IOException("MongoDB is unreachable", e);
@@ -88,31 +90,35 @@ public class MongoConnector {
 		}
 	}
 
-	public MongoEntity getObjById(Long objId) {
+	public MongoEntity getObjById(long jobId, Long objId) {
 		MongoEntity me = new MongoEntity();
 		me.put("_id", objId);
-		return MongoEntity.fromDBObject(this.collection.findOne(me));
+		DBObject objFound = this.getCollectionForJob(jobId).findOne(me);
+		if (objFound == null) {
+			return null;
+		} else {
+			return MongoEntity.fromDBObject(objFound);
+		}
 	}
 
-	public void putList(ArrayList<DBObject> list) {
-		this.collection.insert(list, writeConcern);
+	public void putList(long jobId, List<DBObject> list) {
+		this.getCollectionForJob(jobId).insert(list, WRITE_CONCERN);
 	}
 
-	public ArrayList<BasicDBObject> getObjById(long jobId, Iterable<Long> objIds) {
+	public List<BasicDBObject> getObjById(long jobId, Iterable<Long> objIds) {
 		BasicDBObject query = new BasicDBObject();
 		ArrayList<BasicDBObject> result = new ArrayList<BasicDBObject>();
 
 		query.put("_id", new BasicDBObject("$in", objIds));
-		query.put("job_id", jobId);
-		DBCursor cur = this.collection.find(query);
+		DBCursor cur = this.getCollectionForJob(jobId).find(query);
 		while (cur.hasNext()) {
 			result.add((BasicDBObject)cur.next());
 		}
 		return result;
 	}
 
-	public void saveObject(BasicDBObject object) {
-		this.collection.save(object, writeConcern);
+	public void saveObject(long jobId, BasicDBObject object) {
+		this.getCollectionForJob(jobId).save(object, WRITE_CONCERN);
 	}
 
 	public long getNextObjId() {
@@ -121,26 +127,39 @@ public class MongoConnector {
 		return result.getLong("counter");
 	}
 
-	public Set<Long> executeQuery(BasicDBObject query) {
-		DBCursor cur = this.collection.find(query);
+	public Set<Long> executeQuery(long jobId, BasicDBObject query) {
+		DBCursor cur = this.getCollectionForJob(jobId).find(query);
 		Set<Long> result = new HashSet<Long>();
-		while (cur.hasNext())
+		while (cur.hasNext()) {
 			result.add(Long.parseLong(cur.next().get("_id").toString()));
+		}
 		return result;
 	}
-	
-	public void removeByJobId(long jobId) {
-		long start = System.currentTimeMillis();
-		DBObject ref = new BasicDBObject();
-		ref.put("job_id", jobId);
-		int counter = 0;
 
-		WriteResult res;
-		while ((res = collection.remove(ref)).getN() != 0) {
-			counter += res.getN();
+	public void removeByJobId(long jobId) {
+		long time = System.currentTimeMillis();
+		DBCollection removedCollection = collections.remove(jobId);
+		removedCollection.drop();
+		time = System.currentTimeMillis() - time;
+		LOGGER.debug("Job {} data removed in {} ms", jobId, time);
+	}
+
+	/**
+	 * Get MongoDB collection for current job. Create new if absent.
+	 *
+	 * @param jobId
+	 *            Job ID.
+	 * @return Collection for current job.
+	 */
+	private DBCollection getCollectionForJob(long jobId) {
+		synchronized (collections) {
+			DBCollection tempCollection = collections.get(jobId);
+			if (tempCollection == null) {
+				tempCollection = db.createCollection("job" + jobId, null);
+				tempCollection.ensureIndex(new BasicDBObject("parent", 1));
+				collections.put(jobId, tempCollection);
+			}
+			return tempCollection;
 		}
-		long stop = System.currentTimeMillis();
-		long time = (stop - start) / 1000;
-		LOGGER.debug("Objects removed: {} in {} s", counter, time);
 	}
 }

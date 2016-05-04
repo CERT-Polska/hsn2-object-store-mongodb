@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
- * This file is part of HoneySpider Network 2.0.
- * 
+ *
+ * This file is part of HoneySpider Network 2.1.
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,11 +22,11 @@ package pl.nask.hsn2.os;
 import pl.nask.hsn2.protobuff.ObjectStore.ObjectResponse;
 
 public interface Connector {
-    public abstract byte[] serviceReceive() throws BusException;
+    byte[] serviceReceive() throws BusException;
 
-    public abstract void sendReply(ObjectResponse objectResponse) throws BusException;
+    void sendReply(ObjectResponse objectResponse) throws BusException;
 
-    public abstract void sendError(String msg);
+    void sendError(String msg);
 
-    public abstract boolean isConnected();
+    boolean isConnected();
 }

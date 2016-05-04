@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
-
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
@@ -58,7 +57,7 @@ public class MongoConnectorSingletonTest {
 		for(int i=0;i<l.size();i++) {
 			OsMongoConnector s = l.get(i);
 			OsMongoConnector s2 = l.get((i+1)%l.size());
-			Assert.assertSame("["+i+"]",s.getMongoConnector(),s2.getMongoConnector());
+			Assert.assertEquals(s.getMongoConnector(),s2.getMongoConnector(), "["+i+"]");
 
 		}
 	}

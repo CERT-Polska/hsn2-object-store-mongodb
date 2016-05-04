@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
- * This file is part of HoneySpider Network 2.0.
- * 
+ *
+ * This file is part of HoneySpider Network 2.1.
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -45,11 +45,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class ObjectStore {
-	private final static Logger LOGGER = LoggerFactory.getLogger(ObjectStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStore.class);
 	private static MongoConnector mongoConnector = MongoConnector.getInstance();
-	ExecutorService cleanupService = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
-	private final static ObjectStore OS = new ObjectStore();
-	
+	private ExecutorService cleanupService = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+	private static final ObjectStore OS = new ObjectStore();
+
 	private ObjectStore() {
 	}
 
@@ -61,12 +61,12 @@ public class ObjectStore {
 
 		for (ObjectData objectData : objectRequest.getDataList()) {
 			MongoEntity newObject = prepareNewObject(jobId, objectData);
-			
+
 			list.add(newObject);
 			response.addId(newObject.getLong("_id"));
 		}
 
-		mongoConnector.putList(list);
+		mongoConnector.putList(jobId, list);
 		LOGGER.debug("Objects passed.{}",response.getIds().toString());
 		LOGGER.debug("Count: {}, Addition time: {}", response.getIds().size(), System.currentTimeMillis() - startTime);
 		return response;
@@ -76,13 +76,13 @@ public class ObjectStore {
 		long objId = mongoConnector.getNextObjId();
 		MongoEntity newObject = prepareObject(jobId, objId, objectData);
 		newObject.addCreationTime();
-		newObject.addInitialAttributes();
+		newObject.addInitialAttributes(jobId);
 		return newObject;
 	}
-	
+
 	public ObjectStoreResponse importObject(ObjectRequest objectRequest){
 		long jobId = objectRequest.getJob();
-		
+
 		ObjectStoreResponse response = new ObjectStoreResponse(ResponseType.SUCCESS_PUT);
 		ArrayList<DBObject> list = new ArrayList<DBObject>();
 
@@ -92,13 +92,13 @@ public class ObjectStore {
 			list.add(entity);
 			response.addId(objId);
 		}
-		mongoConnector.putList(list);
+		mongoConnector.putList(jobId, list);
 		return response;
 	}
 
 	private MongoEntity prepareObject(long jobId, long objId, ObjectData objectData){
 		MongoEntity newObject = new MongoEntity();
-		
+
 		newObject.put("_id", objId);
 		newObject.put("job_id", jobId);
 		for (Attribute attribute : objectData.getAttrsList()) {
@@ -108,18 +108,17 @@ public class ObjectStore {
 	}
 
 	public ObjectStoreResponse updateObject(ObjectRequest objectRequest) {
-
-		try {			
+		try {
 			ObjectStoreResponse response = new ObjectStoreResponse(ResponseType.SUCCESS_UPDATE);
 			List<ObjectData> dataList = objectRequest.getDataList();
 			boolean overwrite = objectRequest.getOverwrite();
-			
+
 			ArrayList<Long> ids = new ArrayList<Long>();
 			for (ObjectData objectData : dataList){
 				ids.add(objectData.getId());
 			}
-			
-			ArrayList<BasicDBObject> resultGet = mongoConnector.getObjById(objectRequest.getJob(), ids);
+
+			List<BasicDBObject> resultGet = mongoConnector.getObjById(objectRequest.getJob(), ids);
 			if (resultGet.size() < dataList.size()){
 				response.setType(ResponseType.PARTIAL_UPDATE);
 			}
@@ -137,10 +136,11 @@ public class ObjectStore {
 					response.addMissing(obj.getId());
 				}
 				else{
+					boolean conflict = false;
 					for (Attribute attr : obj.getAttrsList()) {
 						EntityAttribute eattr = EntityAttribute.instanceFor(attr);
 						if (tmp.containsField(attr.getName())) {
-							response.addConflict(Long.parseLong(tmp.getString("_id")));
+							conflict = true;
 							if (overwrite) {
 								tmp.put(attr.getName(), eattr.getValue());
 							}
@@ -149,7 +149,10 @@ public class ObjectStore {
 							tmp.put(attr.getName(), eattr.getValue());
 						}
 					}
-					mongoConnector.saveObject(tmp);
+					if (conflict){
+						response.addConflict(Long.parseLong(tmp.getString("_id")));
+					}
+					mongoConnector.saveObject(objectRequest.getJob(), tmp);
 				}
 			}
 
@@ -165,7 +168,7 @@ public class ObjectStore {
 		Object value = objectFound.get(key);
 		Builder builder  = Attribute.newBuilder().setName(key);
 
-		
+
 		if (value instanceof Integer || key.equalsIgnoreCase("depth")) {
 			builder.setType(Type.INT).setDataInt(objectFound.getInt(key));
 		}
@@ -173,7 +176,7 @@ public class ObjectStore {
 			builder.setType(Type.OBJECT).setDataObject(objectFound.getLong(key));
 		}
 		else if (value instanceof BasicDBObject) {
-			
+
 			BasicDBObject mongoObj = (BasicDBObject) value;
 			if (mongoObj.get("type").equals("TIME")) {
 				builder.setType(Type.TIME).setDataTime(mongoObj.getLong("time"));
@@ -185,6 +188,9 @@ public class ObjectStore {
 		else if (value instanceof Boolean) {
 			builder.setType(Type.BOOL).setDataBool(objectFound.getBoolean(key));
 		}
+		else if (value == null) {
+			builder.setType(Type.EMPTY);
+		}
 		else {
 			builder.setType(Type.STRING).setDataString(objectFound.getString(key));
 		}
@@ -194,12 +200,13 @@ public class ObjectStore {
 
 	public ObjectStoreResponse getObject(ObjectRequest objectRequest) {
 		Iterable<Long> ids = objectRequest.getObjectsList();
-		ArrayList<BasicDBObject> result = mongoConnector.getObjById(objectRequest.getJob(), ids);
+		List<BasicDBObject> result = mongoConnector.getObjById(objectRequest.getJob(), ids);
 		ObjectStoreResponse response = new ObjectStoreResponse(ResponseType.SUCCESS_GET);
 		ObjectData od;
 		ArrayList<Long> helpList = new ArrayList<Long>();
-		for (Long id : ids)
+		for (Long id : ids) {
 			helpList.add(id);
+		}
 
 		List<Attribute> attrs;
 		for (BasicDBObject objectFound : result) {
@@ -228,7 +235,7 @@ public class ObjectStore {
 
 		ObjectStoreQuery objectStoreQuery = new ObjectStoreQuery(objectRequest.getQueryList());
 		BasicDBObject queryObject = objectStoreQuery.filter(objectRequest);
-		Set<Long> ids = mongoConnector.executeQuery(queryObject);
+		Set<Long> ids = mongoConnector.executeQuery(objectRequest.getJob(), queryObject);
 
 		ObjectStoreResponse objectStoreResponse = new ObjectStoreResponse(ResponseType.SUCCESS_QUERY);
 		objectStoreResponse.addAllIds(ids);
@@ -236,17 +243,17 @@ public class ObjectStore {
 	}
 
 	public void removeJobData(final long jobId) {
-		
+
 		cleanupService.submit(new Runnable() {
 			@Override
 			public void run() {
 				mongoConnector.removeByJobId(jobId);
 			}
 		});
-		
-	}	
-	
-	private class DaemonThreadFactory implements ThreadFactory {
+
+	}
+
+	private static class DaemonThreadFactory implements ThreadFactory {
 
 		@Override
 		public Thread newThread(Runnable r) {
@@ -256,7 +263,7 @@ public class ObjectStore {
 			return t;
 		}
 	}
-	
+
 	public static ObjectStore getInstance(){
 		return OS;
 	}

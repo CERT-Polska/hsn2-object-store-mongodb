@@ -1,0 +1,31 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:               hsn2-object-store-mongodb
+# Required-Start:         mongodb
+# Required-Stop:          mongodb
+# Default-Start:          2 3 4 5
+# Default-Stop:           0 1 6
+# Short-Description:      Start/Stop the HSN2 Object Store
+# Description:            Start/Stop the HSN2 Object Store daemon.
+### END INIT INFO
+
+NAME="HSN2 Object Store"
+HSN2_COMPONENT="object-store-mongodb"
+MAINCLASS="pl.nask.hsn2.os.Main"
+CONFFILE=/etc/hsn2/object-store-mongodb.conf
+
+#HSN2_JMX_PORT=1107
+HSN2_JVM_PARAMS_MEMORY="-Xmx270m -Xms270m -XX:SurvivorRatio=2 -Xmn140m"
+
+. /lib/hsn2/init-functions-java
+
+prepare_start() {
+	HSN2_COMPONENT_PARAMS="--connector $BROKER_ADDRESS \
+		-jfi $JOB_FINISHED_IGNORE \
+		-logLevel $LOG_LEVEL"
+}
+
+choose_java_service_action $@
+
+exit $?
